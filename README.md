@@ -8,7 +8,7 @@ It is designed for practical portfolio/market-data workflows first, with trading
 
 ### From npm
 
-After publishing to npm, install the plugin with:
+install the plugin with:
 
 ```bash
 openclaw plugins install openclaw-plugin-tinkoff-invest --pin
