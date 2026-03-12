@@ -1,0 +1,53 @@
+{
+  "name": "openclaw-plugin-tinkoff-invest",
+  "version": "0.1.0",
+  "private": false,
+  "author": "maxyo",
+  "description": "OpenClaw plugin that exposes Tinkoff Invest API tools for accounts, instruments, market data, portfolio, operations, and optional trading actions.",
+  "license": "MIT",
+  "type": "module",
+  "main": "index.ts",
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "openclaw",
+    "plugin",
+    "tinkoff",
+    "invest",
+    "brokerage",
+    "trading"
+  ],
+  "files": [
+    "index.ts",
+    "openclaw.plugin.json",
+    "README.md",
+    "LICENSE",
+    "src",
+    "types",
+    "tsconfig.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "openapi-fetch": "^0.14.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.14",
+    "openapi-typescript": "^7.6.1",
+    "typescript": "^5.8.2"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "scripts": {
+    "spec:download": "node ./scripts/download-openapi-spec.mjs",
+    "generate:types": "npm run spec:download && openapi-typescript specs/tinkoff-invest-openapi.yaml -o src/generated/openapi.d.ts",
+    "typecheck": "npm run generate:types && tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run typecheck"
+  }
+}

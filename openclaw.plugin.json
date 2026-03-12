@@ -1,0 +1,41 @@
+{
+  "id": "tinkoff-invest",
+  "name": "Tinkoff Invest",
+  "description": "Native OpenClaw tools for Tinkoff Invest API: accounts, instruments, market data, portfolio, operations, and optional trading actions.",
+  "version": "0.1.0",
+  "kind": "extension",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "token": {
+        "type": "string",
+        "minLength": 1,
+        "description": "Tinkoff Invest API token. Leave empty until you fill it in the UI."
+      },
+      "baseUrl": {
+        "type": "string",
+        "default": "https://invest-public-api.tinkoff.ru/rest",
+        "description": "REST base URL. Use the sandbox REST endpoint if you want sandbox mode."
+      },
+      "timeoutMs": {
+        "type": "integer",
+        "minimum": 1000,
+        "maximum": 120000,
+        "default": 10000,
+        "description": "Per-request timeout in milliseconds."
+      },
+      "allowTrading": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable mutating tools like post/cancel order. Keep false for readonly mode."
+      },
+      "appName": {
+        "type": "string",
+        "default": "openclaw-plugin-tinkoff-invest/0.1.0",
+        "description": "Custom User-Agent / client app name sent to the upstream API."
+      }
+    },
+    "required": []
+  }
+}
