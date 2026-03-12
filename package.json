@@ -47,7 +47,9 @@
   "scripts": {
     "spec:download": "node ./scripts/download-openapi-spec.mjs",
     "generate:types": "npm run spec:download && openapi-typescript specs/tinkoff-invest-openapi.yaml -o src/generated/openapi.d.ts",
+    "test": "node --experimental-strip-types --test ./test/*.test.mjs",
     "typecheck": "npm run generate:types && tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "npm run typecheck"
+    "verify": "npm test && npm run typecheck",
+    "prepublishOnly": "npm run verify"
   }
 }

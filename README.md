@@ -4,6 +4,32 @@ Native OpenClaw plugin that exposes Tinkoff Invest API tools directly inside the
 
 It is designed for practical portfolio/market-data workflows first, with trading actions available behind an explicit config flag.
 
+## Install in OpenClaw
+
+### From npm
+
+After publishing to npm, install the plugin with:
+
+```bash
+openclaw plugins install openclaw-plugin-tinkoff-invest --pin
+```
+
+### From a local checkout
+
+For local development or before the first npm release:
+
+```bash
+npm ci
+openclaw plugins install -l /absolute/path/to/tinkoff-invest
+```
+
+### After install
+
+1. Restart the OpenClaw Gateway
+2. Open the Plugins UI or edit `plugins.entries.tinkoff-invest.config`
+3. Fill in at least `token`
+4. Keep `allowTrading=false` for the first run
+
 ## Features
 
 ### Read-only tools
@@ -73,6 +99,12 @@ If you need a different source, override it with `TINKOFF_INVEST_OPENAPI_SPEC_UR
 npm run typecheck
 ```
 
+### Tests
+
+```bash
+npm test
+```
+
 ## Repository hygiene before publishing
 
 This repository is prepared for public GitHub release:
@@ -80,6 +112,7 @@ This repository is prepared for public GitHub release:
 - no local account IDs in source
 - explicit MIT license
 - OpenAPI YAML is downloaded during type generation and is not committed
+- automated unit tests run in local verification and in GitHub Actions
 - generated OpenAPI types committed
 - npm publishing is automated through GitHub Actions with `NPM_TOKEN`
 
