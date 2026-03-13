@@ -1,5 +1,5 @@
 {
-  "name": "openclaw-plugin-tinkoff-invest",
+  "name": "@maxyo/tinkoff-invest",
   "version": "0.1.0",
   "private": false,
   "author": "maxyo",

@@ -4,6 +4,7 @@
   "description": "Native OpenClaw tools for Tinkoff Invest API: accounts, instruments, market data, portfolio, operations, and optional trading actions.",
   "version": "0.1.0",
   "kind": "extension",
+  "skills": ["./skills"],
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
