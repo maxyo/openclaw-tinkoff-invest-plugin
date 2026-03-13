@@ -1,6 +1,6 @@
 ---
 name: tinkoff-invest-tools
-description: Use for Tinkoff Invest brokerage tasks: checking accounts, portfolio, futures positions, orders, operations, market data, and safe interpretation of Tinkoff tool outputs.
+description: "Use for Tinkoff Invest brokerage tasks: checking accounts, portfolio, futures positions, orders, operations, market data, and safe interpretation of Tinkoff tool outputs."
 metadata: { "openclaw": { "emoji": "📈" } }
 ---
 
