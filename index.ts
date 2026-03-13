@@ -37,6 +37,113 @@ function createToolResult(summary: string, data: unknown): {
   return json({ ok: true, summary, data });
 }
 
+function int64StringToBigInt(value: unknown): bigint | undefined {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return undefined;
+  }
+
+  try {
+    return BigInt(value.trim());
+  } catch {
+    return undefined;
+  }
+}
+
+function quantityLikeToBigInt(value: unknown): bigint | undefined {
+  if (typeof value !== 'object' || value === null) {
+    return undefined;
+  }
+
+  const record = value as Record<string, unknown>;
+  const units = typeof record['units'] === 'string' ? record['units'] : undefined;
+  const nano = typeof record['nano'] === 'number' ? record['nano'] : undefined;
+
+  if (!units) {
+    return undefined;
+  }
+
+  try {
+    const whole = BigInt(units);
+    if (nano !== undefined && nano !== 0) {
+      return undefined;
+    }
+    return whole;
+  } catch {
+    return undefined;
+  }
+}
+
+function buildPortfolioPositionKey(position: Record<string, unknown>): string | undefined {
+  const positionUid = typeof position['positionUid'] === 'string' ? position['positionUid'] : undefined;
+  if (positionUid) {
+    return `positionUid:${positionUid}`;
+  }
+
+  const instrumentUid = typeof position['instrumentUid'] === 'string' ? position['instrumentUid'] : undefined;
+  if (instrumentUid) {
+    return `instrumentUid:${instrumentUid}`;
+  }
+
+  const figi = typeof position['figi'] === 'string' ? position['figi'] : undefined;
+  if (figi) {
+    return `figi:${figi}`;
+  }
+
+  return undefined;
+}
+
+function normalizeFuturesPositions(
+  positionsResult: Record<string, unknown>,
+  portfolioResult: Record<string, unknown>,
+): Record<string, unknown> {
+  const futures = Array.isArray(positionsResult['futures'])
+    ? (positionsResult['futures'] as Record<string, unknown>[])
+    : [];
+  const portfolioPositions = Array.isArray(portfolioResult['positions'])
+    ? (portfolioResult['positions'] as Record<string, unknown>[])
+    : [];
+
+  const futuresPortfolioPositions = portfolioPositions.filter(
+    (position) => position['instrumentType'] === 'futures',
+  );
+
+  const portfolioByKey = new Map<string, Record<string, unknown>>();
+  for (const position of futuresPortfolioPositions) {
+    const key = buildPortfolioPositionKey(position);
+    if (key) {
+      portfolioByKey.set(key, position);
+    }
+  }
+
+  const normalizedFutures = futures.map((future) => {
+    const futureKey = buildPortfolioPositionKey(future);
+    const portfolioMatch = futureKey ? portfolioByKey.get(futureKey) : undefined;
+    const apiBalanceLots = int64StringToBigInt(future['balance']);
+    const apiBlockedLots = int64StringToBigInt(future['blocked']);
+    const portfolioQuantityLots = portfolioMatch ? quantityLikeToBigInt(portfolioMatch['quantityLots']) : undefined;
+    const portfolioBlockedLots = portfolioMatch ? quantityLikeToBigInt(portfolioMatch['blockedLots']) : undefined;
+
+    return {
+      figi: future['figi'],
+      instrumentUid: future['instrumentUid'],
+      positionUid: future['positionUid'],
+      ...(apiBalanceLots !== undefined ? { apiBalanceLots: apiBalanceLots.toString() } : {}),
+      ...(apiBlockedLots !== undefined ? { apiBlockedLots: apiBlockedLots.toString() } : {}),
+      ...(portfolioQuantityLots !== undefined ? { currentPositionLots: portfolioQuantityLots.toString() } : {}),
+      ...(portfolioBlockedLots !== undefined ? { blockedByOrdersLots: portfolioBlockedLots.toString() } : {}),
+      sourceOfTruth: portfolioQuantityLots !== undefined ? 'portfolio.positions.quantityLots' : 'positions.futures.balance',
+      note:
+        'For futures, currentPositionLots should be treated as the live net position. Raw balance/blocked in get_positions reflect API internals and order reservation state and must not be used alone as the signed position.',
+    };
+  });
+
+  return {
+    futures: normalizedFutures,
+    note:
+      'Use normalized.futures[].currentPositionLots as the live futures position and blockedByOrdersLots as reserved lots from active orders. Do not infer live position from positions.futures.balance alone.',
+  };
+}
+
 function readStringParamLocal(
   params: Record<string, unknown>,
   key: string,
@@ -494,8 +601,20 @@ const tinkoffInvestPlugin = {
         params: Record<string, unknown>,
       ): Promise<ReturnType<typeof createToolResult>> {
         const accountId = readStringParamLocal(params, 'accountId', { required: true });
-        const result = await getClient().getPositions({ accountId });
-        return createToolResult(`Fetched positions for account ${accountId}.`, result);
+        const [positionsResult, portfolioResult] = await Promise.all([
+          getClient().getPositions({ accountId }),
+          getClient().getPortfolio({ accountId }),
+        ]);
+
+        const enrichedResult = {
+          ...positionsResult,
+          normalized: normalizeFuturesPositions(
+            positionsResult as Record<string, unknown>,
+            portfolioResult as Record<string, unknown>,
+          ),
+        };
+
+        return createToolResult(`Fetched positions for account ${accountId}.`, enrichedResult);
       },
     });
 

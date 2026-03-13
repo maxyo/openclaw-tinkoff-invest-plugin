@@ -42,7 +42,7 @@ openclaw plugins install -l /absolute/path/to/tinkoff-invest
 - `tinkoff_get_candles`
 - `tinkoff_get_order_book`
 - `tinkoff_get_portfolio`
-- `tinkoff_get_positions`
+- `tinkoff_get_positions` — now includes `normalized.futures[*].currentPositionLots` / `blockedByOrdersLots` so futures position is not confused with lots reserved by active orders
 - `tinkoff_get_operations`
 - `tinkoff_get_orders`
 - `tinkoff_get_order_state`
